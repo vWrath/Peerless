@@ -89,6 +89,8 @@ class GuildData():
     
     settings: Optional[DataObject] = default_object({
         "roster_cap": "20",
+        "roster_minimum": "10",
+        "mimimum_warning_delay": "2",
         "demand_type": "amount",
         "demand_amount": "3",
         "demand_wait": "7",
@@ -110,6 +112,7 @@ class GuildData():
         "stat_updates": True,
         "suspensions": True,
         "team_disband": True,
+        "team_minimum_warning": True,
         "team_owner_leave": True,
         "team_swap": True,
     })
@@ -249,6 +252,7 @@ class SettingCategories(metaclass=GetItem):
         ("stat updates", "stat_updates"),
         ("suspensions & unsuspensions", "suspensions"),
         ("team disband", "team_disband"),
+        ("team minimum warning", "team_minimum_warning"),
         ("team owner leave", "team_owner_leave"),
         ("team swap", "team_swap"),
     ]
@@ -267,6 +271,8 @@ class SettingCategories(metaclass=GetItem):
     ]
     settings = [
         ("roster cap", "roster_cap"),
+        ("roster minimum", "roster_minimum"),
+        ("mimimum warning delay", "mimimum_warning_delay"),
         ("demand-type", "demand_type"),
         ("demand-amount", "demand_amount"),
         ("demand-wait", "demand_wait"),
@@ -274,6 +280,7 @@ class SettingCategories(metaclass=GetItem):
     ]
     types = {
         "demand_type": [("amount", "amount"), ("wait", "wait")],
-        "demand_wait": [(f"{i} days", str(i)) for i in range(1, 15)],
+        "demand_wait": [(f"{i} day(s)", str(i)) for i in range(1, 15)],
+        "mimimum_warning_delay": [(f"{i} day(s)", str(i)) for i in range(1, 6)],
         "waitlist_type": [("ping", "ping"), ("queue", "queue")],
     }

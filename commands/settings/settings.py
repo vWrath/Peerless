@@ -46,7 +46,7 @@ class SelectSection(BaseView):
             label = "Other Settings", 
             emoji = "<:settings:1137914457360695338>", 
             value = "settings",
-            description = "roster cap, demands, and waitlist"
+            description = "roster cap, demands, team minimums, and waitlist"
         ),
     ])
     async def section_select(self, interaction: discord.Interaction[Peerless], _):
@@ -403,10 +403,10 @@ class OtherSettings(BaseView):
         for label, value in categories[self.category]:
             value = guild_data[self.category][value]
             
-            if label == "demand-wait":
-                content += f"- **{label}:** `{value} days`\n"
+            if label in ["demand-wait", "mimimum warning delay"]:
+                content += f"- **{label}:** `{value or '0'} day(s)`\n"
             else:
-                content += f"- **{label}:** `{value}`\n"
+                content += f"- **{label}:** `{value or 'not set'}`\n"
             
         return content
     
@@ -414,7 +414,7 @@ class OtherSettings(BaseView):
     async def setting(self, interaction: discord.Interaction[Peerless], _):
         option = [x for x in self.setting.options if x.value == self.setting.values[0]][0]
         
-        if option.value in ['roster_cap', 'demand_amount']:
+        if option.value in ['roster_cap', 'roster_minimum', 'demand_amount']:
             return await interaction.response.send_modal(Number(interaction, self, option))
         
         view = Types(interaction, self, option)
@@ -450,6 +450,12 @@ class Number(BaseModal):
         if not 1 < int(value) < 100:
             return await interaction.response.send_message(
                 content = f"<:fail:1136341671857102868>**| That was not a number between 1-100**",
+                ephemeral = True
+            )
+            
+        if self.option.value == "roster_minimum" and int(value) > int(guild_data.settings.roster_cap):
+            return await interaction.response.send_message(
+                content = f"<:fail:1136341671857102868>**| The roster minimum has to be less than the roster cap ({guild_data.settings.roster_cap})**",
                 ephemeral = True
             )
             
@@ -494,8 +500,16 @@ class Types(BaseView):
             self.new_type.add_option(label=label, value=value)
             
     def content(self) -> str:
-        option = self.option.value.split('_')[0]
-        return f"select a new type for {'the `' + option if option == 'waitlist' else '`' + option + 's'}`"
+        value = self.option.value
+        
+        if value == "waitlist_type":
+            option = "the `waitlist`"
+        elif value == "mimimum_warning_delay":
+            option = "the `team minimum delay`"
+        else:
+            option = f"`{value.split('_')[0]}s`"
+        
+        return f"select a new type for {option}"
     
     @ui.select(cls=ui.Select, placeholder="types")
     async def new_type(self, interaction: discord.Interaction[Peerless], _):
